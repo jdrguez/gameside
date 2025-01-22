@@ -40,7 +40,7 @@ class Game(models.Model):
     )
 
     def __str__(self):
-        return f'Nombre: {self.title}, Categoria: {self.category}, Plataforma: {self.platforms}'
+        return self.title
 
     def save(self, *args, **kwargs):
         self.slug = slugify(self.title)
@@ -63,7 +63,7 @@ class Review(models.Model):
     )
 
     def __str__(self):
-        return f'Review de {self.user} sobre el juego {self.game}'
+        return self.comment
 
     def get_absolute_url(self):
         return reverse('games:review-detail', kwargs={'review_pk': self.pk})

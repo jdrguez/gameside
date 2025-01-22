@@ -12,7 +12,7 @@ class Category(models.Model):
     color = ColorField()
 
     def __str__(self):
-        return f'Categoria con nombre: {self.name}'
+        return self.name
 
     def save(self, *args, **kwargs):
         self.slug = slugify(self.name)

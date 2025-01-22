@@ -11,7 +11,7 @@ class Platform(models.Model):
     logo = models.ImageField(upload_to='logos', default='logos/nologo.png')
 
     def __str__(self):
-        return f'Platform {self.name}'
+        return self.name
 
     def get_absolute_url(self):
         return reverse('platforms:platform-detail', kwargs={'platform_slug': self.slug})
