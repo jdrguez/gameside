@@ -1,6 +1,7 @@
 from colorfield.fields import ColorField
 from django.db import models
-from django.text.utils import slugify
+from django.urls import reverse
+from django.utils.text import slugify
 
 
 # Create your models here.
@@ -16,3 +17,6 @@ class Category(models.Model):
     def save(self, *args, **kwargs):
         self.slug = slugify(self.name)
         super().save(*args, **kwargs)
+
+    def get_absolute_url(self):
+        return reverse('categories:category-detail', kwargs={'category_slug': self.slug})
