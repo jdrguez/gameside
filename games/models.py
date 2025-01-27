@@ -53,14 +53,17 @@ class Game(models.Model):
 class Review(models.Model):
     comment = models.TextField()
     rating = models.PositiveSmallIntegerField(
-        validators=[MinValueValidator(limit_value=0), MaxValueValidator(limit_value=5)]
+        validators=[MinValueValidator(limit_value=1), 
+                    MaxValueValidator(limit_value=5),]
     )
     game = models.ForeignKey(Game, related_name='game_reviews', on_delete=models.CASCADE)
-    user = models.ForeignKey(
+    author = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         related_name='user_reviews',
         on_delete=models.CASCADE,
     )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.comment

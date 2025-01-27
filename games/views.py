@@ -1,13 +1,12 @@
 from django.shortcuts import get_list_or_404, get_object_or_404
-
+from django.http import JsonResponse
 from .models import Game, Review
+from .serializer import GameSerializer
 
-
-def game_list(request, filter=''):
-    if filter:
-        games = Game.objects.filter(name=filter)
-    games = get_list_or_404(Game)
-    pass
+def game_list(request):
+    games = Game.objects.all()
+    games_json = GameSerializer(games, request=request)
+    return games_json.json_response()
 
 
 def game_detail(request, game_slug):

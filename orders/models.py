@@ -9,13 +9,13 @@ from django.urls import reverse
 
 class Order(models.Model):
     class Status(models.IntegerChoices):
-        INITIATED = 0
-        CONFIRMED = 1
-        CANCELLED = 2
-        PAID = 3
+        INITIATED = 1
+        CONFIRMED = 2
+        CANCELLED = 3
+        PAID = -1
 
     status = models.IntegerField(
-        choices=Status,
+        choices=Status, default= 1
     )
 
     created_at = models.DateTimeField(auto_now_add=True)
@@ -26,7 +26,7 @@ class Order(models.Model):
         related_name='user_orders',
         on_delete=models.CASCADE,
     )
-    games = models.ManyToManyField('games.Game', related_name='order_games')
+    games = models.ManyToManyField('games.Game', related_name='order_games', null=True)
 
     def get_absolute_url(self):
         return reverse('orders:order-detail', kwargs={'order_pk': self.pk})
