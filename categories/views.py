@@ -1,13 +1,20 @@
-from django.shortcuts import get_object_or_404
+from shared.decorators import method_required
 
+from .helpers import category_exist
 from .models import Category
+from .serializer import CategorySerializer
 
 
+@method_required('get')
 def category_list(request):
     categories = Category.objects.all()
-    pass
+    categories_json = CategorySerializer(categories, request=request)
+    return categories_json.json_response()
 
 
+@method_required('get')
+@category_exist
 def category_detail(request, category_slug):
-    category = get_object_or_404(Category, slug=category_slug)
-    pass
+    category_json = CategorySerializer(request.category, request=request)
+
+    return category_json.json_response()

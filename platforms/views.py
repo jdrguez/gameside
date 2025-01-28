@@ -1,13 +1,19 @@
-from django.shortcuts import get_object_or_404
+from shared.decorators import method_required
 
+from .helpers import platform_exist
 from .models import Platform
+from .serializer import PlatformSerializer
 
 
+@method_required('get')
 def platform_list(request):
     platforms = Platform.objects.all()
-    pass
+    platforms_json = PlatformSerializer(platforms, request=request)
+    return platforms_json.json_response()
 
 
+@method_required('get')
+@platform_exist
 def platform_detail(request, platform_slug):
-    platform = get_object_or_404(Platform, slug=platform_slug)
-    pass
+    platform_json = PlatformSerializer(request.platform, request=request)
+    return platform_json.json_response()

@@ -1,9 +1,11 @@
-from django.shortcuts import get_object_or_404
+from shared.decorators import auth_required, method_required
 
-from .models import Game, Review
-from .serializer import GameSerializer
+from .helpers import game_exist, review_exist
+from .models import Game
+from .serializer import GameSerializer, ReviewSerializer
 
 
+@method_required('get')
 def game_list(request):
     if category := request.GET.get('category'):
         games = Game.objects.filter(category__slug=category)
@@ -20,22 +22,28 @@ def game_list(request):
     return games_json.json_response()
 
 
+@method_required('get')
+@game_exist
 def game_detail(request, game_slug):
-    game = Game.objects.get(slug=game_slug)
-    game_json = GameSerializer(game, request=request)
+    game_json = GameSerializer(request.game, request=request)
     return game_json.json_response()
 
 
+@method_required('get')
+@game_exist
 def review_list(request, game_slug):
-    game = get_object_or_404(Game, slug=game_slug)
-    reviews = game.games_reviews.all()
-    pass
+    reviews = request.game.game_reviews.all()
+    review_json = ReviewSerializer(reviews, request=request)
+    return review_json.json_response()
 
 
+@method_required('get')
+@review_exist
 def review_detail(request, review_pk):
-    review = get_object_or_404(Review, pk=review_pk)
-    pass
+    review_json = ReviewSerializer(request.review, request=request)
+    return review_json.json_response()
 
 
+@auth_required
 def add_review(request, game_slug):
     pass
