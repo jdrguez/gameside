@@ -28,3 +28,16 @@ def method_required(method):
         return wrapper
 
     return decorator
+
+
+def user_owner(func):
+    def wrapper(request, *args, **kwargs):
+        json_post = json.load(request.body)
+        print(json_post)
+        user = get_user_model()
+        user = user.objects.get(token=json_post['key'])
+        if user == request.user:
+            return func(request, *args, **kwargs)
+        return JsonResponse({'error': 'User is not the owner of requested order'}, status=403)
+
+    return wrapper
