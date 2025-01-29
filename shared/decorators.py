@@ -1,19 +1,36 @@
 import json
+from json.decoder import JSONDecodeError
 
 from django.contrib.auth import get_user_model
 from django.http import JsonResponse
 
+from orders.models import Order
+from users.models import Token
+
 
 def auth_required(func):
-    def wrapper(*args, **kwargs):
-        request = args[0]
-        json_post = json.load(request.body)
+    def wrapper(request, *args, **kwargs):
+        json_post = json.loads(request.body)
+        print(json_post)
         user = get_user_model()
         try:
             user = user.objects.get(token__key=json_post['token'])
             request.json_post = json_post
+            return func(request, *args, **kwargs)
         except user.DoesNotExist:
-            return JsonResponse({'error': 'Invalid Token'}, status=401)
+            return JsonResponse({'error': 'Invalid token'}, status=401)
+
+    return wrapper
+
+
+def valid_token(func):
+    def wrapper(request, *args, **kwargs):
+        json_post = json.loads(request.body)
+        try:
+            request.token = Token.objects.get(key=json_post['token'])
+            return func(request, *args, **kwargs)
+        except Token.DoesNotExist:
+            return JsonResponse({'error': 'Invalid token'}, status=401)
 
     return wrapper
 
@@ -30,14 +47,39 @@ def method_required(method):
     return decorator
 
 
+def check_json_body(func):
+    def wrapper(request, *args, **kwargs):
+        try:
+            json_body = json.loads(request.body)
+            return func(request, *args, **kwargs)
+        except JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON body'}, status=400)
+
+    return wrapper
+
+
 def user_owner(func):
     def wrapper(request, *args, **kwargs):
-        json_post = json.load(request.body)
-        print(json_post)
+        order = Order.objects.get(pk=kwargs['order_pk'])
+        json_post = json.loads(request.body)
         user = get_user_model()
-        user = user.objects.get(token=json_post['key'])
-        if user == request.user:
+        user2 = user.objects.get(token__key=json_post['token'])
+        if order.user == user2:
             return func(request, *args, **kwargs)
         return JsonResponse({'error': 'User is not the owner of requested order'}, status=403)
 
     return wrapper
+
+
+def required_fields(*fields):
+    def decorator(func):
+        def wrapper(request, *args, **kwargs):
+            json_body = json.loads(request.body)
+            for field in fields:
+                if field not in json_body:
+                    return JsonResponse({'error': 'Missing required fields'}, status=400)
+            return func(request, *args, **kwargs)
+
+        return wrapper
+
+    return decorator

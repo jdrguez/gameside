@@ -18,7 +18,7 @@ class Game(models.Model):
     title = models.CharField(max_length=300, unique=True)
     slug = models.SlugField(unique=True)
     description = models.TextField(blank=True)
-    cover = models.ImageField(upload_to='covers', default='covers/nocover.png')
+    cover = models.ImageField(upload_to='covers', default='covers/default.jpg')
     price = models.DecimalField(
         max_digits=6,
         decimal_places=2,
@@ -53,8 +53,10 @@ class Game(models.Model):
 class Review(models.Model):
     comment = models.TextField()
     rating = models.PositiveSmallIntegerField(
-        validators=[MinValueValidator(limit_value=1), 
-                    MaxValueValidator(limit_value=5),]
+        validators=[
+            MinValueValidator(limit_value=1),
+            MaxValueValidator(limit_value=5),
+        ]
     )
     game = models.ForeignKey(Game, related_name='game_reviews', on_delete=models.CASCADE)
     author = models.ForeignKey(

@@ -1,4 +1,11 @@
-from shared.decorators import auth_required, method_required
+from django.views.decorators.csrf import csrf_exempt
+
+from shared.decorators import (
+    check_json_body,
+    method_required,
+    required_fields,
+    valid_token,
+)
 
 from .helpers import game_exist, review_exist
 from .models import Game
@@ -44,6 +51,10 @@ def review_detail(request, review_pk):
     return review_json.json_response()
 
 
-@auth_required
+@method_required('post')
+@check_json_body
+@required_fields('token')
+@valid_token
+@csrf_exempt
 def add_review(request, game_slug):
-    pass
+    

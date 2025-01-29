@@ -11,5 +11,5 @@ class Token(models.Model):
         related_name='token',
         on_delete=models.CASCADE,
     )
-    key = uuid.uuid4
+    key = models.UUIDField(default=uuid.uuid4)
     created_at = models.DateTimeField(auto_now_add=True)

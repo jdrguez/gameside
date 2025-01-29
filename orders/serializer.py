@@ -10,10 +10,11 @@ class OrderSerializer(BaseSerializer):
     def serialize_instance(self, instance) -> dict:
         return {
             'id': instance.pk,
-            'status': instance.status,
+            'status': instance.get_status_display(),
             'user': UserSerializer(instance.user, request=self.request).serialize(),
             'key': instance.key if instance.status == 3 else None,
             'games': GameSerializer(instance.games.all(), request=self.request).serialize(),
             'created_at': instance.created_at.isoformat(),
             'updated_at': instance.updated_at.isoformat(),
+            'price': float(instance.price),
         }
