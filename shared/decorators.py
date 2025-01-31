@@ -1,13 +1,14 @@
 import json
 from json.decoder import JSONDecodeError
 
-from django.contrib.auth import get_user_model
+from django.contrib.auth import authenticate
+from django.contrib.auth.models import User
 from django.http import JsonResponse
 
 from orders.models import Order
 from users.models import Token
 
-
+""" 
 def auth_required(func):
     def wrapper(request, *args, **kwargs):
         json_post = json.loads(request.body)
@@ -19,6 +20,20 @@ def auth_required(func):
             return func(request, *args, **kwargs)
         except user.DoesNotExist:
             return JsonResponse({'error': 'Invalid token'}, status=401)
+
+    return wrapper """
+
+
+def auth_required(func):
+    def wrapper(request, *args, **kwargs):
+        try:
+            user = authenticate(
+                username=request.json_body['username'], password=request.json_body['password']
+            )
+            request.user = user
+            return func(request, *args, **kwargs)
+        except User.DoesNotExist:
+            return JsonResponse({'error': 'Invalid credentials'}, status=401)
 
     return wrapper
 
@@ -51,6 +66,7 @@ def check_json_body(func):
     def wrapper(request, *args, **kwargs):
         try:
             json_body = json.loads(request.body)
+            request.json_body = json_body
             return func(request, *args, **kwargs)
         except JSONDecodeError:
             return JsonResponse({'error': 'Invalid JSON body'}, status=400)
@@ -62,9 +78,8 @@ def user_owner(func):
     def wrapper(request, *args, **kwargs):
         order = Order.objects.get(pk=kwargs['order_pk'])
         json_post = json.loads(request.body)
-        user = get_user_model()
-        user2 = user.objects.get(token__key=json_post['token'])
-        if order.user == user2:
+        user = User.objects.get(token__key=json_post['token'])
+        if order.user == user:
             return func(request, *args, **kwargs)
         return JsonResponse({'error': 'User is not the owner of requested order'}, status=403)
 
