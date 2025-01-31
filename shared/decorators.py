@@ -26,14 +26,12 @@ def auth_required(func):
 
 def auth_required(func):
     def wrapper(request, *args, **kwargs):
-        try:
-            user = authenticate(
-                username=request.json_body['username'], password=request.json_body['password']
-            )
+        if user := authenticate(
+            username=request.json_body['username'], password=request.json_body['password']
+        ):
             request.user = user
             return func(request, *args, **kwargs)
-        except User.DoesNotExist:
-            return JsonResponse({'error': 'Invalid credentials'}, status=401)
+        return JsonResponse({'error': 'Invalid credentials'}, status=401)
 
     return wrapper
 

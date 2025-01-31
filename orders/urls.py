@@ -10,4 +10,10 @@ urlpatterns = [
     path('<int:order_pk>/confirm/', views.confirm_order, name='confirm-order'),
     path('<int:order_pk>/cancel/', views.cancel_order, name='cancel-order'),
     path('<int:order_pk>/pay/', views.pay_order, name='pay-order'),
+    path('<int:order_pk>/games/', views.order_game_list, name='order-game-list'),
+    path(
+        '<int:order_pk>/games/add/<str:game_slug>/',
+        views.add_game_to_order,
+        name='add-game-to-order',
+    ),
 ]

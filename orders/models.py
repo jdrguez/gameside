@@ -33,6 +33,19 @@ class Order(models.Model):
     def __str__(self):
         return f'Order estado:{self.status}, User: {self.user}'
 
+    def change_status(self, status: int):
+        self.status = status
+
+    def is_initiated(self):
+        return self.status == 1
+
+    def num_games_in_order(self):
+        return self.games.all().count()
+
+    def add_game(self, game):
+        self.games.add(game)
+        game.stock -= 1
+
     @property
     def get_price(self):
         self.price = sum([game.price for game in self.games.all()])
