@@ -64,6 +64,7 @@ def order_detail(request, order_pk):
 def confirm_order(request, order_pk):
     order = request.order
     order.change_status(2)
+    order.save()
     return JsonResponse({'status': order.get_status_display()})
 
 
@@ -78,6 +79,10 @@ def confirm_order(request, order_pk):
 def cancel_order(request, order_pk):
     order = request.order
     order.change_status(-1)
+    order.save()
+    for game in order.games.all():
+        game.update_stock(1, 'add')
+        game.save()
     return JsonResponse({'status': order.get_status_display()})
 
 
@@ -93,6 +98,7 @@ def cancel_order(request, order_pk):
 def pay_order(request, order_pk):
     order = request.order
     order.change_status(3)
+    order.save()
     return JsonResponse({'status': order.get_status_display()})
 
 
@@ -108,4 +114,7 @@ def add_game_to_order(request, order_pk, game_slug):
     order = request.order
     game = request.game
     order.add_game(game)
+    for game in order.games.all():
+        game.update_stock(1, 'revome')
+        game.save()
     return JsonResponse({'num-games-in-order': order.num_games_in_order()})

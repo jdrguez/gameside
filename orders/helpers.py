@@ -24,23 +24,24 @@ def regex_validator(key: str, regex: str, request) -> bool:
 
 def validate_card(func):
     def wrapper(request, *args, **kwargs):
-        regex_num_card = '[0-9]{15,16}|(([0-9]{4}\s){3}[0-9]{3,4})'
-        regex_exp_date = '^(0[1-9]|1[0-2])\/\d{4}$'
-        regex_cvc = '^\d{3}$'
+        regex_num_card = r'^[0-9]{4}(-[0-9]{4}){3}$'
+        regex_exp_date = r'^(0[1-9]|1[0-2])/\d{4}$'
+        regex_cvc = r'^\d{3}$'
+
         error = None
         if regex_validator(key='card-number', regex=regex_num_card, request=request):
             error = 'Invalid card number'
         if regex_validator(key='exp-date', regex=regex_exp_date, request=request):
-            date = datetime.now().strftime('%m/%Y')
-            date = int(datetime.now().strptime(date, '%m/%Y').replace('/', ''))
-            card_date = datetime.strptime(request.json_body['exp-date'], '%m/%y')
-            print(card_date)
-            date = int(date.replace('/', ''))
-            if card_date <= date:
-                error = 'Card expired'
             error = 'Invalid expiration date'
         if regex_validator(key='cvc', regex=regex_cvc, request=request):
             error = 'Invalid CVC'
+        try:
+            card_date = datetime.strptime(request.json_body['exp-date'] , '%m/%Y')
+            current_date = datetime.now()
+            if current_date >= card_date:
+                error = 'Card expired'
+        except ValueError:
+            None
 
         if error:
             return JsonResponse({'error': f'{error}'}, status=400)

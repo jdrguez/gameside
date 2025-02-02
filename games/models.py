@@ -41,6 +41,13 @@ class Game(models.Model):
 
     def __str__(self):
         return self.title
+    
+    def update_stock(self, num, action):
+        match action:
+            case 'add':
+                self.stock += num
+            case 'remove':
+                self.stock += num
 
     def save(self, *args, **kwargs):
         self.slug = slugify(self.title)
