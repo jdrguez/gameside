@@ -1,4 +1,3 @@
-from django.contrib.auth.models import User
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 
@@ -6,6 +5,7 @@ from shared.decorators import (
     check_json_body,
     method_required,
     required_fields,
+    token_exists,
     valid_token,
 )
 
@@ -56,11 +56,13 @@ def review_detail(request, review_pk):
 @csrf_exempt
 @method_required('post')
 @check_json_body
-@required_fields('token', 'rating', 'comment')
+@required_fields('rating', 'comment')
 @valid_token
+@token_exists
 @game_exist
 def add_review(request, game_slug):
-    user = User.objects.get(token=request.token)
+    user = request.user
+    print(user)
     rating = int(request.json_body['rating'])
     if rating < 1 or rating > 5:
         return JsonResponse({'error': 'Rating is out of range'}, status=400)

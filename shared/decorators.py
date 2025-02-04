@@ -1,4 +1,5 @@
 import json
+import re
 from json.decoder import JSONDecodeError
 
 from django.contrib.auth import authenticate
@@ -7,6 +8,8 @@ from django.http import JsonResponse
 
 from orders.models import Order
 from users.models import Token
+
+from .helpers import get_token
 
 """ 
 def auth_required(func):
@@ -36,14 +39,28 @@ def auth_required(func):
     return wrapper
 
 
+def token_exists(func):
+    def wrapper(request, *args, **kwargs):
+        auth = request.headers.get('Authoritation', 'no existe')
+        try:
+            if auth_value := get_token(auth):
+                Token.objects.get(key=auth_value)
+                request.user = User.objects.get(token__key=auth_value)
+                return func(request, *args, **kwargs)
+        except Token.DoesNotExist:
+            return JsonResponse({'error': 'Unregistered authentication token'}, status=401)
+
+    return wrapper
+
+
 def valid_token(func):
     def wrapper(request, *args, **kwargs):
-        json_post = json.loads(request.body)
-        try:
-            request.token = Token.objects.get(key=json_post['token'])
+        auth = request.headers.get('Authorization', 'no existe')
+        regexp = 'Bearer (?P<token>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})'
+        if auth_value := re.fullmatch(regexp, auth):
+            request.user = User.objects.get(token__key=auth_value)
             return func(request, *args, **kwargs)
-        except Token.DoesNotExist:
-            return JsonResponse({'error': 'Invalid token'}, status=401)
+        return JsonResponse({'error': 'Invalid authentication token'}, status=400)
 
     return wrapper
 
@@ -75,8 +92,7 @@ def check_json_body(func):
 def user_owner(func):
     def wrapper(request, *args, **kwargs):
         order = Order.objects.get(pk=kwargs['order_pk'])
-        json_post = json.loads(request.body)
-        user = User.objects.get(token__key=json_post['token'])
+        user = request.user
         if order.user == user:
             return func(request, *args, **kwargs)
         return JsonResponse({'error': 'User is not the owner of requested order'}, status=403)
