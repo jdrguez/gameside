@@ -114,7 +114,4 @@ def add_game_to_order(request, order_pk, game_slug):
     order = request.order
     game = request.game
     order.add_game(game)
-    for game in order.games.all():
-        game.update_stock(1, 'revome')
-        game.save()
     return JsonResponse({'num-games-in-order': order.num_games_in_order()})
