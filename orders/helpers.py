@@ -74,7 +74,7 @@ def status_errors(status):
                     if order.status == 2:
                         return func(request, *args, **kwargs)
                     return JsonResponse(
-                        {'error': 'Orders can only be payed when confirmed'}, status=400
+                        {'error': 'Orders can only be paid when confirmed'}, status=400
                     )
 
         return wrapper

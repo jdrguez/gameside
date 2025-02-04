@@ -41,13 +41,10 @@ def auth_required(func):
 
 def token_exists(func):
     def wrapper(request, *args, **kwargs):
-        auth = request.headers.get('Authoritation', 'no existe')
         try:
-            if auth_value := get_token(auth):
-                Token.objects.get(key=auth_value)
-                request.user = User.objects.get(token__key=auth_value)
-                return func(request, *args, **kwargs)
-        except Token.DoesNotExist:
+            request.user = User.objects.get(token__key=request.token)
+            return func(request, *args, **kwargs)
+        except:
             return JsonResponse({'error': 'Unregistered authentication token'}, status=401)
 
     return wrapper
@@ -58,7 +55,7 @@ def valid_token(func):
         auth = request.headers.get('Authorization', 'no existe')
         regexp = 'Bearer (?P<token>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})'
         if auth_value := re.fullmatch(regexp, auth):
-            request.user = User.objects.get(token__key=auth_value)
+            request.token = auth_value["token"]
             return func(request, *args, **kwargs)
         return JsonResponse({'error': 'Invalid authentication token'}, status=400)
 

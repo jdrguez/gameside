@@ -10,6 +10,7 @@ from shared.decorators import (
     required_fields,
     user_owner,
     valid_token,
+    token_exists,
 )
 
 from .helpers import order_exist, status_errors, validate_card
@@ -19,11 +20,11 @@ from .serializer import OrderSerializer
 
 @method_required('post')
 @check_json_body
-@required_fields('token')
 @valid_token
+@token_exists
 @csrf_exempt
 def add_order(request):
-    user = User.objects.get(token=request.token)
+    user = request.user
     order = Order.objects.create(user=user)
     order_json = OrderSerializer(order, request=request)
     return order_json.json_response()
@@ -31,8 +32,8 @@ def add_order(request):
 
 @method_required('post')
 @check_json_body
-@required_fields('token')
 @valid_token
+@token_exists
 @order_exist
 @csrf_exempt
 @user_owner
@@ -43,8 +44,8 @@ def order_game_list(request, order_pk):
 
 @method_required('post')
 @check_json_body
-@required_fields('token')
 @valid_token
+@token_exists
 @order_exist
 @csrf_exempt
 @user_owner
@@ -55,8 +56,8 @@ def order_detail(request, order_pk):
 
 @method_required('post')
 @check_json_body
-@required_fields('token')
 @valid_token
+@token_exists
 @order_exist
 @csrf_exempt
 @user_owner
@@ -70,8 +71,8 @@ def confirm_order(request, order_pk):
 
 @method_required('post')
 @check_json_body
-@required_fields('token')
 @valid_token
+@token_exists
 @order_exist
 @csrf_exempt
 @user_owner
@@ -88,8 +89,9 @@ def cancel_order(request, order_pk):
 
 @method_required('post')
 @check_json_body
-@required_fields('token', 'card-number', 'exp-date', 'cvc')
+@required_fields('card-number', 'exp-date', 'cvc')
 @valid_token
+@token_exists
 @order_exist
 @csrf_exempt
 @user_owner
@@ -104,8 +106,8 @@ def pay_order(request, order_pk):
 
 @method_required('post')
 @check_json_body
-@required_fields('token')
 @valid_token
+@token_exists
 @order_exist
 @game_exist
 @csrf_exempt
