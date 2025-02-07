@@ -7,9 +7,6 @@ from django.contrib.auth.models import User
 from django.http import JsonResponse
 
 from orders.models import Order
-from users.models import Token
-
-from .helpers import get_token
 
 """ 
 def auth_required(func):
@@ -44,7 +41,7 @@ def token_exists(func):
         try:
             request.user = User.objects.get(token__key=request.token)
             return func(request, *args, **kwargs)
-        except:
+        except User.DoesNotExist:
             return JsonResponse({'error': 'Unregistered authentication token'}, status=401)
 
     return wrapper
@@ -55,7 +52,7 @@ def valid_token(func):
         auth = request.headers.get('Authorization', 'no existe')
         regexp = 'Bearer (?P<token>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})'
         if auth_value := re.fullmatch(regexp, auth):
-            request.token = auth_value["token"]
+            request.token = auth_value['token']
             return func(request, *args, **kwargs)
         return JsonResponse({'error': 'Invalid authentication token'}, status=400)
 

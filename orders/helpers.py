@@ -36,7 +36,7 @@ def validate_card(func):
         if regex_validator(key='cvc', regex=regex_cvc, request=request):
             error = 'Invalid CVC'
         try:
-            card_date = datetime.strptime(request.json_body['exp-date'] , '%m/%Y')
+            card_date = datetime.strptime(request.json_body['exp-date'], '%m/%Y')
             current_date = datetime.now()
             if current_date >= card_date:
                 error = 'Card expired'
@@ -58,17 +58,12 @@ def status_errors(status):
         def wrapper(request, *args, **kwargs):
             order = request.order
             match status:
-                case 'CONFIRMED':
+                case 'CONFIRMED' | 'CANCELLED':
                     if order.is_initiated():
                         return func(request, *args, **kwargs)
                     return JsonResponse(
-                        {'error': 'Orders can only be confirmed when initiated'}, status=400
-                    )
-                case 'CANCELLED':
-                    if order.is_initiated():
-                        return func(request, *args, **kwargs)
-                    return JsonResponse(
-                        {'error': 'Orders can only be cancelled when initiated'}, status=400
+                        {'error': 'Orders can only be confirmed/cancelled when initiated'},
+                        status=400,
                     )
                 case 'PAID':
                     if order.status == 2:
@@ -80,3 +75,15 @@ def status_errors(status):
         return wrapper
 
     return decorator
+
+
+def valid_status(func):
+    def wrapper(request, *args, **kwargs):
+        valid_status = [-1, 2]
+        r_status = request.json_body['status']
+        if r_status not in valid_status:
+            return JsonResponse({'error': 'Invalid status'}, status=400)
+        request.status = int(r_status)
+        return func(request, *args, **kwargs)
+
+    return wrapper

@@ -15,6 +15,20 @@ def game_exist(func):
     return wrapper
 
 
+def game_exist_post(func):
+    def wrapper(request, *args, **kwargs):
+        game_slug = request.json_body['game-slug']
+        print(game_slug)
+        try:
+            game = Game.objects.get(slug=game_slug)
+            request.game = game
+            return func(request, *args, **kwargs)
+        except Game.DoesNotExist:
+            return JsonResponse({'error': 'Game not found'}, status=404)
+
+    return wrapper
+
+
 def review_exist(func):
     def wrapper(*args, **kwargs):
         try:

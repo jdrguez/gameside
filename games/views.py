@@ -62,7 +62,6 @@ def review_detail(request, review_pk):
 @game_exist
 def add_review(request, game_slug):
     user = request.user
-    print(user)
     rating = int(request.json_body['rating'])
     if rating < 1 or rating > 5:
         return JsonResponse({'error': 'Rating is out of range'}, status=400)

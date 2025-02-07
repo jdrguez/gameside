@@ -1,19 +1,18 @@
-from django.contrib.auth.models import User
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 
-from games.helpers import game_exist
+from games.helpers import game_exist_post
 from games.serializer import GameSerializer
 from shared.decorators import (
     check_json_body,
     method_required,
     required_fields,
+    token_exists,
     user_owner,
     valid_token,
-    token_exists,
 )
 
-from .helpers import order_exist, status_errors, validate_card
+from .helpers import order_exist, status_errors, valid_status, validate_card
 from .models import Order
 from .serializer import OrderSerializer
 
@@ -30,30 +29,29 @@ def add_order(request):
     return order_json.json_response()
 
 
-@method_required('post')
-@check_json_body
+@csrf_exempt
+@method_required('get')
 @valid_token
 @token_exists
 @order_exist
-@csrf_exempt
 @user_owner
 def order_game_list(request, order_pk):
     game_json = GameSerializer(request.order.games.all(), request=request)
     return game_json.json_response()
 
 
-@method_required('post')
-@check_json_body
+@csrf_exempt
+@method_required('get')
 @valid_token
 @token_exists
 @order_exist
-@csrf_exempt
 @user_owner
 def order_detail(request, order_pk):
     order_json = OrderSerializer(request.order, request=request)
     return order_json.json_response()
 
 
+""" 
 @method_required('post')
 @check_json_body
 @valid_token
@@ -85,6 +83,23 @@ def cancel_order(request, order_pk):
         game.update_stock(1, 'add')
         game.save()
     return JsonResponse({'status': order.get_status_display()})
+ """
+
+
+@method_required('post')
+@check_json_body
+@required_fields('status')
+@valid_token
+@token_exists
+@order_exist
+@user_owner
+@valid_status
+@status_errors('cancelled')
+def change_order_status(request, order_pk):
+    order = request.order
+    order.change_status(request.status)
+    order.save()
+    return JsonResponse({'status': order.get_status_display()})
 
 
 @method_required('post')
@@ -104,16 +119,16 @@ def pay_order(request, order_pk):
     return JsonResponse({'status': order.get_status_display()})
 
 
+@csrf_exempt
 @method_required('post')
 @check_json_body
+@required_fields('game-slug')
 @valid_token
 @token_exists
 @order_exist
-@game_exist
-@csrf_exempt
+@game_exist_post
 @user_owner
-def add_game_to_order(request, order_pk, game_slug):
+def add_game_to_order(request, order_pk):
     order = request.order
-    game = request.game
-    order.add_game(game)
+    order.add_game(request.game)
     return JsonResponse({'num-games-in-order': order.num_games_in_order()})

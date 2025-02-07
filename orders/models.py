@@ -25,7 +25,6 @@ class Order(models.Model):
         on_delete=models.CASCADE,
     )
     games = models.ManyToManyField('games.Game', related_name='order_games', null=True)
-    price = 0
 
     def get_absolute_url(self):
         return reverse('orders:order-detail', kwargs={'order_pk': self.pk})
@@ -47,5 +46,5 @@ class Order(models.Model):
         game.stock -= 1
 
     @property
-    def get_price(self):
-        self.price = sum([game.price for game in self.games.all()])
+    def price(self):
+        return sum([game.price for game in self.games.all()])
