@@ -4,9 +4,6 @@ from django.conf import settings
 from django.db import models
 from django.urls import reverse
 
-# Create your models here.
-
-
 class Order(models.Model):
     class Status(models.IntegerChoices):
         INITIATED = 1, 'Initiated'

@@ -3,7 +3,6 @@ from django.urls import reverse
 from django.utils.text import slugify
 
 
-# Create your models here.
 class Platform(models.Model):
     name = models.CharField(max_length=300, unique=True)
     slug = models.SlugField(unique=True)

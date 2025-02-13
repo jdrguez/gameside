@@ -51,41 +51,6 @@ def order_detail(request, order_pk):
     return order_json.json_response()
 
 
-""" 
-@method_required('post')
-@check_json_body
-@valid_token
-@token_exists
-@order_exist
-@csrf_exempt
-@user_owner
-@status_errors('confirmed')
-def confirm_order(request, order_pk):
-    order = request.order
-    order.change_status(2)
-    order.save()
-    return JsonResponse({'status': order.get_status_display()})
-
-
-@method_required('post')
-@check_json_body
-@valid_token
-@token_exists
-@order_exist
-@csrf_exempt
-@user_owner
-@status_errors('cancelled')
-def cancel_order(request, order_pk):
-    order = request.order
-    order.change_status(-1)
-    order.save()
-    for game in order.games.all():
-        game.update_stock(1, 'add')
-        game.save()
-    return JsonResponse({'status': order.get_status_display()})
- """
-
-
 @method_required('post')
 @check_json_body
 @required_fields('status')

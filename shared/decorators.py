@@ -8,22 +8,6 @@ from django.http import JsonResponse
 
 from orders.models import Order
 
-""" 
-def auth_required(func):
-    def wrapper(request, *args, **kwargs):
-        json_post = json.loads(request.body)
-        print(json_post)
-        user = get_user_model()
-        try:
-            user = user.objects.get(token__key=json_post['token'])
-            request.json_post = json_post
-            return func(request, *args, **kwargs)
-        except user.DoesNotExist:
-            return JsonResponse({'error': 'Invalid token'}, status=401)
-
-    return wrapper """
-
-
 def auth_required(func):
     def wrapper(request, *args, **kwargs):
         if user := authenticate(
